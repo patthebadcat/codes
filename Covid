@@ -1,0 +1,152 @@
+SELECT * 
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths` 
+WHERE continent IS NOT NULL
+ORDER BY 3,4
+
+SELECT * 
+FROM `portfolio-projects-360304.Covid_Data.Covid_Vaccinations` 
+ORDER BY 3,4
+
+SELECT location, date, total_cases, new_cases, total_deaths, population
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+ORDER BY 1,2
+
+--Death Percentage - probability of death if contracted by Covid by location
+
+SELECT location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+ORDER BY 1,2
+
+
+SELECT location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE location LIKE '%States%'
+ORDER BY 1,2
+
+--Cases vs Population - percentage of Population that has Covid
+
+SELECT location, date, total_cases, population, (total_cases/population)*100 AS population_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE location = "Philippines"
+ORDER BY 1,2
+
+--Country with Highest Infection Rate
+SELECT location,population, max(total_cases) AS max_total_cases, max((total_cases/population))*100 AS max_population_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+GROUP BY location,population
+ORDER BY max_population_percentage DESC
+
+--Country with Highest Death Rate
+SELECT location, population, max(cast(total_deaths as int)) AS max_total_deaths, max((total_deaths/total_cases))*100 AS max_death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE continent IS NOT NULL
+GROUP BY location, population
+ORDER BY max_total_deaths DESC
+
+--Continent with Highest Infection Rate
+SELECT continent, max(total_cases) AS max_total_cases, max((total_cases/population))*100 AS max_population_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+GROUP BY continent
+ORDER BY max_population_percentage DESC
+
+--Continent with Highest Death Rate
+--Sample 1
+SELECT location, max(cast(total_deaths as int)) AS max_total_deaths, max((total_deaths/total_cases))*100 AS max_death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE continent IS NULL AND location not like '%income%'
+GROUP BY location
+ORDER BY max_total_deaths DESC
+--Sample 2
+SELECT continent, max(cast(total_deaths as int)) AS max_total_deaths
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE continent IS NOT NULL
+GROUP BY continent
+ORDER BY max_total_deaths DESC
+
+--Global Cases
+--by Date
+SELECT date, sum(new_cases) AS daily_global_cases,sum(cast(new_deaths as int)) AS daily_global_deaths, (sum(cast(new_deaths as int))) / (sum(new_cases))*100 AS daily_global_death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE continent IS NOT NULL
+GROUP BY date
+ORDER BY 1
+
+--whole population
+SELECT sum(new_cases) AS daily_global_cases,sum(cast(new_deaths as int)) AS daily_global_deaths, (sum(cast(new_deaths as int))) / (sum(new_cases))*100 AS daily_global_death_percentage
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
+WHERE continent IS NOT NULL
+
+
+--Join Deaths with Vaccinations - using CTE
+WITH populationVSvaccination AS (
+
+  SELECT Deaths.continent, Deaths.location, Deaths.date, population,Vaccinations.new_vaccinations, SUM(cast(Vaccinations.new_vaccinations as int)) OVER(PARTITION BY Deaths.location ORDER BY Deaths.location, Deaths.date) AS cumulative_vaccinations 
+  FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths` AS Deaths
+  JOIN `portfolio-projects-360304.Covid_Data.Covid_Vaccinations` AS Vaccinations ON Deaths.location = Vaccinations.location AND Deaths.date = Vaccinations.date
+  WHERE Deaths.continent IS NOT NULL)
+  
+
+SELECT *, (cumulative_vaccinations / population)*100 AS vaccination_percentage
+FROM populationVSvaccination
+
+
+--Join & MAX -Deaths with Vaccinations - using CTE
+WITH populationVSvaccination AS (
+
+  SELECT Deaths.continent,population, SUM(cast(Vaccinations.new_vaccinations as int)) OVER(PARTITION BY Deaths.location ORDER BY Deaths.location) AS cumulative_vaccinations 
+  FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths` AS Deaths
+  JOIN `portfolio-projects-360304.Covid_Data.Covid_Vaccinations` AS Vaccinations ON Deaths.continent = Vaccinations.continent
+  WHERE Deaths.continent IS NOT NULL
+  )
+  
+
+SELECT *, max((cumulative_vaccinations / population))*100 AS max_vaccination_percentage
+FROM populationVSvaccination
+GROUP BY continent, population, cumulative_vaccinations 
+
+--TEMP Table
+
+CREATE TABLE PopVaccinatedpercentage
+(
+  continent string(250),
+  location string(250),
+  date datetime,
+  population int,
+  new_vaccinations int,
+  cumulative_vaccinations int
+)
+
+INSERT INTO Pop_Vaccinated_Percentage
+SELECT Deaths.continent, Deaths.location, Deaths.date, population,Vaccinations.new_vaccinations, SUM(cast(Vaccinations.new_vaccinations as int)) OVER(PARTITION BY Deaths.location ORDER BY Deaths.location,  Deaths.date) AS cumulative_vaccinations 
+FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths` AS Deaths
+JOIN `portfolio-projects-360304.Covid_Data.Covid_Vaccinations` AS Vaccinations ON Deaths.location = Vaccinations.location AND Deaths.date = Vaccinations.date
+--WHERE Deaths.continent IS NOT NULL
+  
+SELECT *, (cumulative_vaccinations / population)*100 AS vaccination_percentage
+FROM PopVaccinatedpercentage
+
+
+--TEMP TABLE 
+DROP TABLE if exists #Pop_Vaccinated_Percentage
+CREATE TABLE #Pop_Vaccinated_Percentage
+(
+  continent nvarchar(250),
+  location nvarchar(250),
+  date datetime,
+  population numeric,
+  new_vaccinations numeric
+
+)
+
+INSERT INTO #Pop_Vaccinated_Percentage
+SELECT Deaths.continent, Deaths.location, Deaths.date, population,Vaccinations.new_vaccinations, SUM(cast(Vaccinations.new_vaccinations as int)) OVER(PARTITION BY Deaths.location ORDER BY Deaths.location, Deaths.date) AS cumulative_vaccinations 
+  FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths` AS Deaths
+  JOIN `portfolio-projects-360304.Covid_Data.Covid_Vaccinations` AS Vaccinations ON Deaths.location = Vaccinations.location AND Deaths.date = Vaccinations.date
+  --WHERE Deaths.continent IS NOT NULL
+
+SELECT *, (cumulative_vaccinations / population)*100 AS vaccination_percentage
+FROM #Pop_Vaccinated_Percentage
+
+--VIEW for Visuals
+SELECT *
+ FROM `portfolio-projects-360304.Covid_Data.Covid_Deaths`
