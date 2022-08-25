@@ -1,0 +1,77 @@
+---
+title: "Palmer Penguin Plots"
+author: "patthebadcat"
+date: "2022-08-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE, message = FALSE,fig.show='animate', ffmpeg.format='gif')
+```
+
+## Setup the Environment
+Setup the environment by loading the *tidyverse* and *palmerpenguins* packages:
+
+```{r penguins}
+library(ggplot2)
+library(palmerpenguins)
+library(tidyverse)
+
+```
+
+
+## Plots
+
+Plotting the data through *ggplot2*. It is a plotting package that provides helpful commands to create complex plots from data in a data frame.
+
+```{r ggplot}
+ggplot(data = penguins) + 
+  geom_point(mapping = aes(x = flipper_length_mm, y = body_mass_g, shape = species, color = species, alpha = species))
+```
+
+## Visualization
+The facet_grid() function will produce a grid of plots for each combination of variables that you specify, even if some plots are empty. The facet_wrap() function will only produce plots for the combinations of variables that have values, which means it won't produce any empty plots.
+
+### Flipper length and Body Mass by Species
+```{r species}
+ggplot(penguins,aes(flipper_length_mm,body_mass_g, color= species)) +
+  geom_point()+
+  facet_wrap(~species)
+```
+
+### Flipper length and Body Mass by Sex
+```{r sex}
+ggplot(penguins,aes(flipper_length_mm,body_mass_g, color= species)) +
+  geom_point()+
+  facet_grid(~sex)
+```
+
+### Flipper length and Body Mass by Sex & Species
+```{r facet_grid}
+ggplot(penguins,aes(flipper_length_mm,body_mass_g, color= species)) +
+  geom_point()+
+  facet_grid(sex~species)
+```
+
+### Adding labels on the plot
+```{r labs}
+
+ggplot(penguins,aes(flipper_length_mm,body_mass_g, color= species)) +
+  geom_point() +
+  labs(title = "Penguins: Flipper Length vs. Body Mass", size = 5,subtitle = "Sample of 3 Penguin Species",
+       caption = "Data collected by Dr. Kristen Gorman") +
+  annotate("text", x=210, y=2400, fontface = "bold",label = "The Gentoos are the largest", size = 3, color = "purple")
+```
+
+```{r label}
+ggplot(penguins,aes(flipper_length_mm,body_mass_g, color= species)) +
+  geom_point() +
+  facet_grid(sex~species) +
+  labs(title = "Penguins: Flipper Length vs. Body Mass", size = 5,subtitle = "Sample of 3 Penguin Species",
+       caption = "Data collected by Dr. Kristen Gorman") 
+
+```
+
+### The End
+
+![](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
