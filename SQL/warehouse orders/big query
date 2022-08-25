@@ -1,0 +1,44 @@
+-- code 1
+SELECT
+    warehouse.warehouse_id,
+    warehouse.warehouse_alias,
+    COUNT(orders.order_id) AS num_of_orders,
+    ROUND(COUNT(orders.order_id) / (SELECT COUNT(*)FROM warehouse_orders.Orders) * 100, 2) AS percentage, /*COUNT(orders.order_id) / (SELECT COUNT(*) FROM warehouse_orders.Orders) * 100 <= 20 */
+    CASE
+        WHEN COUNT(orders.order_id)/(SELECT COUNT(*)FROM warehouse_orders.Orders) * 100 <= 20
+        THEN "Fulfilled 0-20% of all orders"
+        WHEN COUNT(orders.order_id)/(SELECT COUNT(*)FROM warehouse_orders.Orders) * 100 > 20
+        AND COUNT(orders.order_id)/(SELECT COUNT(*)FROM warehouse_orders.Orders) * 100 <= 60
+        THEN "Fulfilled 21-60% of all orders"
+        ELSE "Fulfilled more than 60% of all orders"
+    END AS fulfillment_summary
+FROM `beaming-essence-356707.warehouse_orders.Warehouse` AS warehouse
+LEFT JOIN `beaming-essence-356707.warehouse_orders.Orders` AS orders
+ON warehouse.warehouse_id = orders.warehouse_id
+GROUP BY warehouse.warehouse_id, warehouse.warehouse_alias 
+HAVING COUNT(order_id) > 0
+
+
+-- code 2
+SELECT  
+  warehouse.warehouse_id, warehouse.warehouse_alias,
+  COUNT(orders.order_id) AS num_orders,
+  (SELECT COUNT(*) FROM `beaming-essence-356707.warehouse_orders.Orders` AS orders) AS total_orders, 
+    CASE 
+      WHEN COUNT(orders.order_id)/ (SELECT COUNT(*) FROM `beaming-essence-356707.warehouse_orders.Orders` AS orders) <= 0.20
+      THEN "fulfilled 0-20% of orders"
+      WHEN COUNT(orders.order_id)/ (SELECT COUNT(*) FROM `beaming-essence-356707.warehouse_orders.Orders` AS orders) > 0.20
+      AND COUNT(orders.order_id)/ (SELECT COUNT(*) FROM `beaming-essence-356707.warehouse_orders.Orders` AS orders) <= 0.60
+      THEN "fulfilled 21-60% of orders"
+    ELSE "fulfilled more than 60% of orders"
+    END AS fulfillment_summary
+
+
+
+FROM `beaming-essence-356707.warehouse_orders.Warehouse` AS warehouse 
+
+LEFT JOIN  `beaming-essence-356707.warehouse_orders.Orders` AS orders
+ON orders.warehouse_id = warehouse.warehouse_id
+
+
+GROUP BY warehouse.warehouse_id, warehouse.warehouse_alias
