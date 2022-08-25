@@ -1,0 +1,83 @@
+library(datasets)
+data(iris)
+
+install.packages("RCurl")
+library(RCurl)
+
+iris <- read.csv(text = getURL("https://gist.githubusercontent.com/netj/8836201/raw/6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv"))
+
+View(iris)
+head(iris,5)
+tail (iris,5)
+
+#summary
+summary(iris)
+summary(iris$sepal.length)
+
+# Check to see if there are missing data
+summary(is.na(iris))
+
+# skimr() - provides larger set of statistics
+
+install.packages("skimr")
+library(skimr)
+
+# Perform skim to display summary statistics
+skim(iris) 
+
+install.packages("dplyr")
+library(dplyr)
+
+# Group data by Species then perform skim
+iris %>% 
+  dplyr::group_by(variety) %>% 
+  skim() 
+
+# R base plot()
+
+# Panel plots
+plot(iris)
+plot(iris, col = "orange")
+
+install.packages("ggplot2")
+library(ggplot2)
+
+install.packages("tidyverse")
+library(tidyverse)
+
+# Scatter plot (ggplot)
+
+ggplot(iris, aes(sepal.width,sepal.length, color= variety))+
+  geom_point()+
+  facet_wrap(~variety)
+
+# Scatter plot (plot)
+plot(iris$sepal.width,iris$sepal.length)
+
+plot(iris$sepal.width,iris$sepal.length, col = "orange")   
+
+# Scatter plot with label (plot)
+plot(iris$sepal.width,iris$sepal.length, col = "brown",     
+     xlab = "Sepal width", ylab = "Sepal length")
+
+# Histogram
+hist(iris$sepal.width, col = "green") 
+
+# Feature plots
+install.packages("caret", dependencies = c("Depends", "Suggests"))
+
+featurePlot(x = iris[,1:4], 
+            y = iris$variety, 
+            plot = "boxplot",
+            strip=strip.custom(par.strip.text=list(cex=.7)),
+            scales = list(x = list(relation="free"), 
+                          y = list(relation="free")))
+
+boxplot(mean~sepal.width,
+        data = iris,
+        main = "iris boxplot",
+        xlab = "total",
+        ylab="variety",
+        col = "orange",
+        border = "dark green",
+        notch = TRUE)
