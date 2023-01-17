@@ -1,0 +1,384 @@
+Yelp Dataset Profiling and Analysis
+
+1. Profile the data: total number of records for each of the tables
+	
+i. Attribute table = 10000
+ii. Business table = 10000
+iii. Category table = 10000
+iv. Checkin table = 10000
+v. elite_years table = 10000
+vi. friend table =  10000
+vii. hours table = 10000
+viii. photo table = 10000
+ix. review table = 10000
+x. tip table = 10000
+xi. user table = 10000
+	
+
+
+2. Total distinct records by either the foreign key or primary key for each table.
+
+i. Business = 10000 id
+ii. Hours = 1562 business_id
+iii. Category = 2643 business_id
+iv. Attribute = 1115 business_id
+v. Review = 10000 id , 8090 business_id, 9581 user_id
+vi. Checkin = 493
+vii. Photo = 10000 id, 6493 business_id
+viii. Tip = 537 user_id, 3979 business_id
+ix. User = 10000
+x. Friend =  11 user_id
+xi. Elite_years = 2780 user_id
+
+
+
+3. Columns with null values in the Users table
+
+	none
+	
+	
+	SQL code used to arrive at answer:
+
+SELECT *
+
+FROM user
+
+WHERE
+      id IS NULL OR
+      name IS NULL OR
+      review_count IS NULL OR
+      yelping_since IS NULL OR
+      useful IS NULL OR
+      funny IS NULL OR
+      cool IS NULL OR
+      fans IS NULL OR
+      average_stars IS NULL OR
+      compliment_hot IS NULL OR
+      compliment_more IS NULL OR
+      compliment_profile IS NULL OR
+      compliment_cute IS NULL OR
+      compliment_list IS NULL OR
+      compliment_note IS NULL OR
+      compliment_plain IS NULL OR
+      compliment_cool IS NULL OR
+      compliment_funny IS NULL OR
+      compliment_writer IS NULL OR
+      compliment_photos IS NULL
+	
+	
+
+	
+4. Smallest (minimum), largest (maximum), and average (mean) value.
+
+	i. Table: Review, Column: Stars
+	
+		min:	1	max:	5	avg: 3.7082
+		
+	
+	ii. Table: Business, Column: Stars
+	
+		min:	1	max:	5	avg: 3.6549
+		
+	
+	iii. Table: Tip, Column: Likes
+	
+		min: 0		max:	2	avg: 0.0144
+		
+	
+	iv. Table: Checkin, Column: Count
+	
+		min:	1	max:	53	avg: 1.9414
+		
+	
+	v. Table: User, Column: Review_count
+	
+		min:	0	max:	2000	avg: 24.2995
+		
+
+
+5. Cities with the most reviews in descending order:
+
+	SQL code used to arrive at answer:select city , sum(review_count) as total_review_count from business group by city order by total_review_count desc; 
+	
+	
+	result:
++-----------------+--------------------+
+| city            | total_review_count |
++-----------------+--------------------+
+| Las Vegas       |              82854 |
+| Phoenix         |              34503 |
+| Toronto         |              24113 |
+| Scottsdale      |              20614 |
+| Charlotte       |              12523 |
+| Henderson       |              10871 |
+| Tempe           |              10504 |
+| Pittsburgh      |               9798 |
+| Montréal        |               9448 |
+| Chandler        |               8112 |
+| Mesa            |               6875 |
+| Gilbert         |               6380 |
+| Cleveland       |               5593 |
+| Madison         |               5265 |
+| Glendale        |               4406 |
+| Mississauga     |               3814 |
+| Edinburgh       |               2792 |
+| Peoria          |               2624 |
+| North Las Vegas |               2438 |
+| Markham         |               2352 |
+| Champaign       |               2029 |
+| Stuttgart       |               1849 |
+| Surprise        |               1520 |
+| Lakewood        |               1465 |
+| Goodyear        |               1155 |
++-----------------+--------------------+
+(Output limit exceeded, 25 of 362 total rows shown)
+	
+
+	
+6. Distribution of star ratings to the business.
+
+i. Avon
+
+SQL code used to arrive at answer: 
+
+select stars as star_rating, count(stars) as count from business where City  = "Avon" group by stars
+
+result:
+
++-------------+-------+
+| star_rating | count |
++-------------+-------+
+|         1.5 |     1 |
+|         2.5 |     2 |
+|         3.5 |     3 |
+|         4.0 |     2 |
+|         4.5 |     1 |
+|         5.0 |     1 |
++-------------+-------+
+
+
+ii. Beachwood
+
+SQL code used to arrive at answer:
+
+select stars as star_rating, count(stars) as count from business where City  = "Beachwood" group by stars
+
+
+result:
+		
++-------------+-------+
+| star_rating | count |
++-------------+-------+
+|         2.0 |     1 |
+|         2.5 |     1 |
+|         3.0 |     2 |
+|         3.5 |     2 |
+|         4.0 |     1 |
+|         4.5 |     2 |
+|         5.0 |     5 |
++-------------+-------+select
+
+7. Top 3 users based on their total number of reviews:
+		
+	SQL code used to arrive at answer:
+
+select name, review_count from user order by review_count desc limit 3
+	
+		result:
++--------+--------------+
+| name   | review_count |
++--------+--------------+
+| Gerald |   2000       |
+| Sara   |   1629       |
+| Yuri   |   1339       |
++--------+--------------+
+
+8. Posing more reviews correlation with more fans. 
+
+Having a high review_count doesn’t have a correlation to more fans
+
+	Findings and interpretation of the results:
+	
+  select name, review_count, fans  from user order by fans desc limit 20;
+  
+  result:
+
++-----------+--------------+------+
+| name      | review_count | fans |
++-----------+--------------+------+
+| Amy       |          609 |  503 |
+| Mimi      |          968 |  497 |
+| Harald    |         1153 |  311 |
+| Gerald    |         2000 |  253 |
+| Christine |          930 |  173 |
+| Lisa      |          813 |  159 |
+| Cat       |          377 |  133 |
+| William   |         1215 |  126 |
+| Fran      |          862 |  124 |
+| Lissa     |          834 |  120 |
+| Mark      |          861 |  115 |
+| Tiffany   |          408 |  111 |
+| bernice   |          255 |  105 |
+| Roanna    |         1039 |  104 |
+| Angela    |          694 |  101 |
+| .Hon      |         1246 |  101 |
+| Ben       |          307 |   96 |
+| Linda     |          584 |   89 |
+| Christina |          842 |   85 |
+| Jessica   |          220 |   84 |
++-----------+--------------+------+
+
+	
+9. Reviews with the word "love" or with the word "hate".
+
+There are more reviews with the word "love" than the word "hate". Reviews with word "love" have 1780 counts and reviews with word "hate" have 232 counts
+
+
+SQL code used to arrive at answer:
+select
+(select count(text) from review where text like '%love%') as with_word_love ,
+(select count(text) from review where text like '%hate%') as with_word_hate
+	
+	
+10. Top 10 users with the most fans:
+
+SQL code used to arrive at answer:
+	
+		SELECT id,
+			   name,
+			   fans
+		FROM user
+		ORDER BY fans DESC
+		LIMIT 10
+	
+	
+result:
+
+		+------------------------+-----------+------+
+		| id                     | name      | fans |
+		+------------------------+-----------+------+
+		| -9I98YbNQnLdAmcYfb324Q | Amy       |  503 |
+		| -8EnCioUmDygAbsYZmTeRQ | Mimi      |  497 |
+		| --2vR0DIsmQ6WfcSzKWigw | Harald    |  311 |
+		| -G7Zkl1wIWBBmD0KRy_sCw | Gerald    |  253 |
+		| -0IiMAZI2SsQ7VmyzJjokQ | Christine |  173 |
+		| -g3XIcCb2b-BD0QBCcq2Sw | Lisa      |  159 |
+		| -9bbDysuiWeo2VShFJJtcw | Cat       |  133 |
+		| -FZBTkAZEXoP7CYvRV2ZwQ | William   |  126 |
+		| -9da1xk7zgnnfO1uTVYGkA | Fran      |  124 |
+		| -lh59ko3dxChBSZ9U7LfUw | Lissa     |  120 |
+		+------------------------+-----------+------+
+		
+
+Part 2: Inferences and Analysis
+
+1. One city and category. Group the businesses in that city or category by their overall star rating. Compare the businesses with 2-3 stars to the businesses with 4-5 stars and answer the following questions. Include your code.
+
+city chosen - Toronto
+category chosen - Food
+
+
+i. Number of reviews
+
+'2-3 stars' (10 review counts) have lesser review counts than '4-5 stars' (15, 26 review counts)
+
+         
+ii. Location data provided between these two groups.
+
+the two groups categorized by name each differ in location data (see postal code, address, neighboor)
+
+
+SQL code used for analysis:
+
+
+//code - analysis for (i)
+
+select 
+case 
+when stars >=2 and stars <=3 then "2-3 stars"
+when stars >= 4 then "4-5 stars"
+end as rating,
+
+name, category,stars, review_count, city, postal_code, address, neighborhood, hours
+from business inner join category on business.id = category.business_id
+              inner join hours on business.id = hours.business_id
+where city = "Toronto" and category = "Food"
+order by stars desc;
+
+//code - analysis for (ii)
+
+select 
+case 
+when stars >=2 and stars <=3 then "2-3 stars"
+when stars >= 4 then "4-5 stars"
+end as rating,
+
+name, category,stars, review_count, city, postal_code, address, neighborhood, hours
+from business inner join category on business.id = category.business_id
+              inner join hours on business.id = hours.business_id
+where city = "Toronto" and category = "Food"
+group by name
+order by stars desc;
+		
+		
+2. Business based on the ones that are open and the ones that are closed. 
+i. Difference 1:
+businesses'  review counts and ratings have a correlation with it being open or closed.
+businesses that are open tend to have higher review counts than businesses that are closed    
+
+         
+ii. Difference 2:
+ businesses that are open tend to have higher avegare ratings than businesses that are closed   
+         
+         
+SQL code used for analysis:
+
+select is_open,count(distinct (id)) as number_of_businesss,sum(review_count) as total_count_of_reviews,round(avg(review_count),2) as avg_review,round(avg(stars),2) as avg_rating 
+from business         
+group by is_open
+	
+	
+3. Type of data for analysis:
+
+The sentiment analysis shows the rated list of businesses in Las Vegas that the reviewers think have the best and worst services 
+(as per category) that the business provides.  I used sentiment analysis because it provide insights  that will help businesses improve their
+overall performance.
+                  
+iii. Output of your finished dataset:
++------------------------------------------------+----------------------------+---------------------------------+---------------+
+| name                                           | total_reviews_for_business | top_reviewed_service            | rating        |
++------------------------------------------------+----------------------------+---------------------------------+---------------+
+| Desert Medical Equipment                       |                         12 | Shopping                        | Very Positive |
+| Jon Petrick, DC - Las Vegas Pain Relief Center |                         25 | Doctors                         | Very Positive |
+| Motors & More                                  |                         21 | Heating & Air Conditioning/HVAC | Very Positive |
+| Trendsetters                                   |                          6 | Beauty & Spas                   | Very Positive |
+| Hibachi-San                                    |                          6 | Japanese                        | Positive      |
+| Red Rock Canyon Visitor Center                 |                        448 | Active Life                     | Positive      |
+| Anthem Pediatrics                              |                         48 | Health & Medical                | Positive      |
+| Big Wong Restaurant                            |                       5376 | Asian Fusion                    | Positive      |
+| Children's Dental Center                       |                         33 | Pediatric Dentists              | Positive      |
+| Jacques Cafe                                   |                       1176 | Gluten-Free                     | Positive      |
+| Sweet Ruby Jane Confections                    |                        150 | Desserts                        | Positive      |
+| Vue at Centennial                              |                         18 | Home Services                   | Positive      |
+| Hi Scores - Blue Diamond                       |                        420 | Bars                            | Positive      |
+| Wooly Wonders                                  |                         22 | Shopping                        | Positive      |
+| WorldMark Las Vegas - Spencer Street           |                         95 | Hotels                          | Positive      |
+| Wingstop                                       |                        369 | Restaurants                     | Neutral       |
+| Walgreens                                      |                         42 | Beauty & Spas                   | Negative      |
++------------------------------------------------+----------------------------+---------------------------------+---------------+
+
+
+iv. SQL code you used to create your final dataset:
+
+select name,sum(review_count) as total_reviews_for_business,category as top_reviewed_service,
+case 
+when stars =5 then "Very Positive"
+when stars >3 and stars <5 then "Positive"
+when stars =3 then "Neutral"
+when stars >1.5  and stars <3 then "Negative"
+when stars <=1.5 then "Very Negative"
+end as rating
+from business inner join category on business.id = category.business_id
+where city = "Las Vegas" 
+group by name
+order by stars desc;
